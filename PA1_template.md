@@ -170,7 +170,7 @@ median(newStepList$steps,na.rm=TRUE)
 ## [1] 10766.19
 ```
 
-The values is very close to what I got before, because I used the average to fill in NAs.
+The values are very close to what I got before, because I used the average to fill in NAs.
 
 ##Are there differences in activity patterns between weekdays and weekends?
 
