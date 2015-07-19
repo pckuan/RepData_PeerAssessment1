@@ -1,10 +1,4 @@
----
-title: "Reproducible Research Assignment 1"
-output:
-  html_document:
-    fig_caption: yes
-    keep_md: yes
----
+# Reproducible Research Assignment 1
 ##Loading and preprocessing the data
 
 
@@ -12,7 +6,8 @@ output:
 
 I used read.csv() to load the data.
 
-```{r}
+
+```r
 Activity <- read.csv("activity.csv", sep=",",colClasses=c("numeric","character","numeric"))
 ```
 
@@ -20,7 +15,8 @@ Activity <- read.csv("activity.csv", sep=",",colClasses=c("numeric","character",
 
 The initial loaded date column is not a date type, so I transformed it into one.
 
-```{r}
+
+```r
 Activity$date <- as.Date(Activity$date)
 ```
 
@@ -33,7 +29,8 @@ Activity$date <- as.Date(Activity$date)
 
 I made a new data frame from the sum of steps in each date by the function tapply().
 
-```{r}
+
+```r
 stepList<-data.frame(tapply(Activity$steps, Activity$date, FUN=sum))
 colnames(stepList)<-'steps'
 stepList$date<-as.Date(row.names(stepList))
@@ -43,17 +40,32 @@ stepList$date<-as.Date(row.names(stepList))
 
 I drew a histogtam picture with 10 bins. 
 
-```{r}
+
+```r
 hist(stepList$steps, xlab="Steps", breaks=10, main="Histogram of total steps per day")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
 **Calculate and report the mean and median of the total number of steps taken per day**
 
 I made a mean and median calculation without considering NA by using na.rm=TRUE.
 
-```{r}
+
+```r
 mean(stepList$steps,na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(stepList$steps,na.rm=TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ##What is the average daily activity pattern?
@@ -62,25 +74,34 @@ median(stepList$steps,na.rm=TRUE)
 
 I made another data frame about average steps in each interval by the function tapply() again.
 
-```{r}
+
+```r
 timeList<-data.frame(tapply(Activity$steps, Activity$interval, FUN=mean, na.rm=TRUE))
 colnames(timeList)<-'interval'
 ```
 
 I then drew another picture shows the average steps during a day.
 
-```{r}
+
+```r
 plot(row.names(timeList),timeList$interval,type="l", xlab="Time", ylab="Averaged step",las=3,axes=FALSE)
 axis(side=1, at=seq(0, 2400, by=100))
 axis(side=2, at=seq(0, 200, by=50))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
 **Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**
 
 I used the max() function to find out the interval which contains the maximum number of steps.
 
-```{r}
+
+```r
 Activity$interval[which.max(timeList$interval)[[1]]]
+```
+
+```
+## [1] 835
 ```
 
 The answer is the interval of 835.
@@ -94,8 +115,13 @@ The answer is the interval of 835.
 
 I used is.na() to calculate the number.
 
-```{r}
+
+```r
 sum(is.na(Activity$steps))
+```
+
+```
+## [1] 2304
 ```
 
 **Devise a strategy for filling in all of the missing values in the dataset.**
@@ -103,7 +129,8 @@ sum(is.na(Activity$steps))
 
 I took the average of summed steps and distributed the number uniformly for all NA columns.
 
-```{r}
+
+```r
 newSteps<-Activity$steps
 newSteps[is.na(Activity$steps)]<-mean(stepList$steps,na.rm=TRUE)/sum(Activity$date=="2012-10-01")
 ```
@@ -112,7 +139,8 @@ newSteps[is.na(Activity$steps)]<-mean(stepList$steps,na.rm=TRUE)/sum(Activity$da
 
 I repeated similar steps as before to generate the desired picture. 
 
-```{r}
+
+```r
 newActivity<-data.frame(newSteps,Activity$date,Activity$interval)
 colnames(newActivity)<-c("steps","date","interval")
 newStepList<-data.frame(tapply(newActivity$steps, newActivity$date, FUN=sum))
@@ -121,11 +149,25 @@ newStepList$date<-as.Date(row.names(newStepList))
 hist(newStepList$steps, xlab="Steps", breaks=10,main="Histogram of total steps per day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
 I took the same function to calculate the mean and median values.
 
-```{r}
+
+```r
 mean(newStepList$steps,na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(newStepList$steps,na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 
 The values is very close to what I got before, because I used the average to fill in NAs.
@@ -136,7 +178,8 @@ The values is very close to what I got before, because I used the average to fil
 
 I introduced a new column called 'weekday', which uses the function weekdays() to determine if the date is in weekdays or not. 
 
-```{r}
+
+```r
 Activity$weekday <- weekdays(Activity$date)=="Sunday" | weekdays(Activity$date)=="Saturday" 
 Activity$weekday[Activity$weekday=="TRUE"] <- "weekday"
 Activity$weekday[Activity$weekday=="FALSE"] <- "weekend"
@@ -146,7 +189,8 @@ newTimeList$Interval<-as.numeric(row.names(newTimeList))
 
 After applying tapply(), the resulted data frame is not I want for a tidy data. In order to change it, I introduced a package 'reshape' and melted the data frame down.
 
-```{r}
+
+```r
 library(reshape)
 weekList<-melt(newTimeList,id="Interval")
 ```
@@ -155,10 +199,13 @@ weekList<-melt(newTimeList,id="Interval")
 
 For drawing the picture, I used the package 'lattice' and generated the corresponding picture.
 
-```{r}
+
+```r
 library(lattice) 
 xyplot(value~Interval|variable,data=weekList,type="l",layout=c(1,2),ylab="Number of steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
     
 We can see that the patterns are different in different situations.
 
